@@ -1,6 +1,9 @@
-import 'package:chatbot_ui_practice/blocs/chat_message_bloc/chat_message_bloc.dart';
 import 'package:chatbot_ui_practice/blocs/simple_bloc_delegate.dart';
+import 'package:chatbot_ui_practice/blocs/spash_screen_bloc/spash_screen_state.dart';
+import 'package:chatbot_ui_practice/blocs/spash_screen_bloc/splash_screen_bloc.dart';
+import 'package:chatbot_ui_practice/blocs/spash_screen_bloc/splash_screen_event.dart';
 import 'package:chatbot_ui_practice/screens/chat_screen.dart';
+import 'package:chatbot_ui_practice/screens/splash_screen.dart';
 import 'package:chatbot_ui_practice/services/chat_message_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +12,12 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   BlocSupervisor.delegate = SimpleBlocDelegate();
   ChatMessageService chatMessageService = ChatMessageService();
-  runApp(MyApp(chatMessageService: chatMessageService,));
+  runApp(
+    BlocProvider(
+      create: (context) => SplashScreenBloc()..add(LoadSplashScreen()),
+      child: MyApp(chatMessageService: chatMessageService,)
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -25,7 +33,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ChatScreen(chatMessageService: chatMessageService)
+      home: BlocBuilder<SplashScreenBloc,SplashScreenState>(
+
+        builder: (context , state)
+        {
+          if(state is Loading)
+          {
+            return SplashScreen();
+          }
+          if(state is Loaded)
+          {
+            return ChatScreen(chatMessageService: chatMessageService);
+          }
+        }
+      )
     );
   }
 }
